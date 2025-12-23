@@ -1,0 +1,328 @@
+"""
+================================================================
+MODULE: Bus Schedule Linked List
+DEVELOPER: SHA (Shangkary A/P Kawtheman)
+STUDENT ID: AW240031
+TASK: Bus schedule linked list with peak/off-peak optimization
+================================================================
+"""
+
+class ScheduleNode:
+    """Node for bus schedule linked list"""
+    def __init__(self, bus_id, time, period, capacity=40):
+        self.bus_id = bus_id        # Bus ID (e.g., "B1", "B2")
+        self.time = time            # Departure time (e.g., "08:00")
+        self.period = period        # "Peak" or "Off-Peak"
+        self.capacity = capacity    # Passenger capacity
+        self.next = None           # Pointer to next node
+    
+    def __str__(self):
+        """String representation for display"""
+        return f"Bus {self.bus_id} | {self.time} | {self.period} | Capacity: {self.capacity}"
+
+
+class BusSchedule:
+    """Linked list implementation for bus schedules"""
+    
+    def __init__(self):
+        """Initialize empty linked list"""
+        self.head = None   # Head pointer
+        self.size = 0      # Number of nodes
+    
+    # ========== OPERATION 1: INSERT ==========
+    def add_schedule(self, bus_id, time, period, capacity=40):
+        """
+        Insert new schedule at the END of linked list
+        Time Complexity: O(n)
+        """
+        new_node = ScheduleNode(bus_id, time, period, capacity)
+        
+        # If list is empty, new node becomes head
+        if self.head is None:
+            self.head = new_node
+        else:
+            # Traverse to the last node
+            current = self.head
+            while current.next:
+                current = current.next
+            # Insert at end
+            current.next = new_node
+        
+        self.size += 1
+        return True
+    
+    # ========== OPERATION 2: DELETE ==========
+    def remove_schedule(self, bus_id):
+        """
+        Delete schedule by bus ID
+        Time Complexity: O(n)
+        """
+        current = self.head
+        prev = None
+        
+        # Search for the node
+        while current:
+            if current.bus_id == bus_id:
+                # Found the node, remove it
+                if prev:
+                    prev.next = current.next  # Bypass current node
+                else:
+                    self.head = current.next   # Removing head node
+                
+                self.size -= 1
+                return True  # Successfully removed
+            
+            prev = current
+            current = current.next
+        
+        return False  # Bus ID not found
+    
+    # ========== OPERATION 3: SEARCH ==========
+    def search_schedule(self, bus_id):
+        """
+        Search for schedule by bus ID
+        Time Complexity: O(n)
+        """
+        current = self.head
+        
+        while current:
+            if current.bus_id == bus_id:
+                return current  # Return found node
+            current = current.next
+        
+        return None  # Not found
+    
+    def search_by_period(self, period):
+        """
+        Search all buses in specific period (Peak/Off-Peak)
+        Time Complexity: O(n)
+        """
+        results = []
+        current = self.head
+        
+        while current:
+            if current.period == period:
+                results.append(current)
+            current = current.next
+        
+        return results
+    
+    # ========== OPERATION 4: TRAVERSE ==========
+    def display_schedule(self):
+        """
+        Traverse and display all schedules
+        Time Complexity: O(n)
+        """
+        current = self.head
+        
+        if not current:
+            print("No bus schedules available.")
+            return
+        
+        print(f"\n{'='*40}")
+        print(f"BUS SCHEDULE (Total: {self.size} buses)")
+        print(f"{'='*40}")
+        
+        count = 1
+        while current:
+            print(f"{count}. {current}")
+            current = current.next
+            count += 1
+    
+    # ========== PEAK/OFF-PEAK OPTIMIZATION ==========
+    def optimize_peak_hours(self):
+        """
+        Optimization: Add extra buses during peak hours
+        when there are large gaps between peak hour buses
+        """
+        if self.size < 2:
+            return 0  # Not enough buses to optimize
+        
+        added_buses = 0
+        current = self.head
+        
+        while current and current.next:
+            # Check if both are peak hour buses
+            if current.period == "Peak" and current.next.period == "Peak":
+                # Calculate time gap in minutes
+                gap = self._time_gap(current.time, current.next.time)
+                
+                if gap > 30:  # If gap is more than 30 minutes
+                    # Add bus in the middle
+                    new_time = self._midpoint_time(current.time, current.next.time)
+                    new_id = f"PEAK-EXTRA-{added_buses+1}"
+                    
+                    # Create and insert new node
+                    self._insert_after(current, new_id, new_time, "Peak", 40)
+                    added_buses += 1
+            
+            current = current.next
+        
+        print(f"Optimization: Added {added_buses} extra buses during peak hours")
+        return added_buses
+    
+    def reduce_off_peak_buses(self, max_off_peak=2):
+        """
+        Optimization: Remove excessive off-peak buses
+        to allocate resources to peak hours
+        """
+        off_peak_buses = self.search_by_period("Off-Peak")
+        
+        if len(off_peak_buses) <= max_off_peak:
+            return 0  # Already within limit
+        
+        # Remove excess off-peak buses
+        excess_count = len(off_peak_buses) - max_off_peak
+        removed = 0
+        
+        for i in range(excess_count):
+            bus_id = off_peak_buses[i].bus_id
+            if self.remove_schedule(bus_id):
+                removed += 1
+        
+        print(f"Optimization: Removed {removed} off-peak buses")
+        return removed
+    
+    # ========== HELPER FUNCTIONS ==========
+    def _time_gap(self, time1, time2):
+        """Calculate gap between two times in minutes"""
+        t1_min = self._time_to_minutes(time1)
+        t2_min = self._time_to_minutes(time2)
+        return abs(t2_min - t1_min)
+    
+    def _midpoint_time(self, time1, time2):
+        """Find midpoint time between two times"""
+        t1_min = self._time_to_minutes(time1)
+        t2_min = self._time_to_minutes(time2)
+        mid_min = (t1_min + t2_min) // 2
+        return self._minutes_to_time(mid_min)
+    
+    def _insert_after(self, node, bus_id, time, period, capacity):
+        """Insert new node after given node"""
+        new_node = ScheduleNode(bus_id, time, period, capacity)
+        new_node.next = node.next
+        node.next = new_node
+        self.size += 1
+    
+    def _time_to_minutes(self, time_str):
+        """Convert HH:MM to minutes since midnight"""
+        try:
+            hours, minutes = map(int, time_str.split(':'))
+            return hours * 60 + minutes
+        except:
+            return 0
+    
+    def _minutes_to_time(self, minutes):
+        """Convert minutes to HH:MM format"""
+        hours = minutes // 60
+        mins = minutes % 60
+        return f"{hours:02d}:{mins:02d}"
+    
+    # ========== STATISTICS ==========
+    def get_stats(self):
+        """Get statistics about the schedule"""
+        peak_count = 0
+        current = self.head
+        
+        while current:
+            if current.period == "Peak":
+                peak_count += 1
+            current = current.next
+        
+        stats = {
+            'total': self.size,
+            'peak': peak_count,
+            'off_peak': self.size - peak_count,
+            'peak_percentage': (peak_count / self.size * 100) if self.size > 0 else 0
+        }
+        
+        return stats
+
+
+# ========== UTILITY FUNCTIONS ==========
+def determine_period(time_str):
+    """
+    Determine if time is Peak or Off-Peak
+    Peak hours: 7:00-9:00 and 17:00-19:00
+    """
+    try:
+        hour = int(time_str.split(':')[0])
+        if (7 <= hour <= 9) or (17 <= hour <= 19):
+            return "Peak"
+        else:
+            return "Off-Peak"
+    except:
+        return "Unknown"
+
+
+def validate_time(time_str):
+    """Validate time format HH:MM"""
+    try:
+        hours, minutes = map(int, time_str.split(':'))
+        return 0 <= hours < 24 and 0 <= minutes < 60
+    except:
+        return False
+
+
+# ========== DEMONSTRATION ==========
+def demonstrate_sha_part():
+    """
+    Demonstrate SHA's part of the project
+    Shows all linked list operations and optimization
+    """
+    print("\n" + "="*60)
+    print("SHA'S PART: BUS SCHEDULE LINKED LIST DEMONSTRATION")
+    print("="*60)
+    
+    # Create bus schedule system
+    schedule = BusSchedule()
+    
+    print("\n1. ADDING BUS SCHEDULES:")
+    # Add some schedules
+    schedule.add_schedule("B1", "07:30", determine_period("07:30"))
+    schedule.add_schedule("B2", "08:15", determine_period("08:15"))
+    schedule.add_schedule("B3", "11:00", determine_period("11:00"))
+    schedule.add_schedule("B4", "17:30", determine_period("17:30"))
+    schedule.add_schedule("B5", "19:00", determine_period("19:00"))
+    
+    # Display all schedules
+    schedule.display_schedule()
+    
+    print("\n2. SEARCHING OPERATIONS:")
+    # Search for specific bus
+    bus = schedule.search_schedule("B3")
+    if bus:
+        print(f"Found: {bus}")
+    
+    # Search by period
+    peak_buses = schedule.search_by_period("Peak")
+    print(f"\nPeak hour buses: {len(peak_buses)}")
+    
+    print("\n3. DELETION OPERATION:")
+    # Remove a bus
+    schedule.remove_schedule("B3")
+    print("Removed bus B3")
+    schedule.display_schedule()
+    
+    print("\n4. OPTIMIZATION ALGORITHMS:")
+    # Run optimization
+    added = schedule.optimize_peak_hours()
+    removed = schedule.reduce_off_peak_buses(max_off_peak=2)
+    
+    print("\n5. FINAL SCHEDULE AFTER OPTIMIZATION:")
+    schedule.display_schedule()
+    
+    print("\n6. STATISTICS:")
+    stats = schedule.get_stats()
+    print(f"Total buses: {stats['total']}")
+    print(f"Peak buses: {stats['peak']} ({stats['peak_percentage']:.1f}%)")
+    print(f"Off-peak buses: {stats['off_peak']}")
+    
+    print("\n" + "="*60)
+    print("✅ SHA'S PART DEMONSTRATION COMPLETE")
+    print("="*60)
+
+
+# ========== MAIN EXECUTION ==========
+if __name__ == "__main__":
+    demonstrate_sha_part()
