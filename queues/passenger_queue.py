@@ -12,3 +12,15 @@ class PassengerQueue:
 
   def is_empty(self):
     return self.front is None
+
+  def enqueue(self, passenger_id, arrival_time):
+    """Add passenger to the queue"""
+    new_node = PassengerNode(passenger_id, arrival_time)
+
+    if self.is_empty():
+      self.front = self.rear = new_node
+    else:
+      self.rear.next = new_node
+      self.rear = new_node
+
+    self.size += 1
