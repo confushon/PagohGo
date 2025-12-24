@@ -1,0 +1,101 @@
+#1. Route Linked List (Core Structure)
+class RouteNode:
+    def __init__(self, stop_name, distance_to_next=0):
+        self.stop_name = stop_name
+        self.distance_to_next = distance_to_next
+        self.next = None
+
+#2. Linked List – Route List Implementation
+class RouteLinkedList:
+    def __init__(self, route_name):
+        self.route_name = route_name
+        self.head = None
+
+    def add_stop(self, stop_name, distance_to_next=0):
+        new_node = RouteNode(stop_name, distance_to_next)
+        if not self.head:
+            self.head = new_node
+            return
+        current = self.head
+        while current.next:
+            current = current.next
+        current.next = new_node
+
+#3. Sequence of Bus Stops (UTHM Pagoh Route)
+route = RouteLinkedList("UTHM Pagoh Main Route")
+
+route.add_stop("Kafe Kolej Kediaman", 300)
+route.add_stop("Block K", 200)
+route.add_stop("Block J", 250)
+route.add_stop("Academic Building", 400)
+route.add_stop("Sharefac", 0)
+
+#4. Traversal Logic – Bus Movement Simulation
+def simulate_bus_travel(route):
+    print(f"Bus starting route: {route.route_name}")
+    current = route.head
+
+    while current:
+        print(f"Bus arrived at: {current.stop_name}")
+        if current.distance_to_next > 0:
+            print(f"Travelling to next stop ({current.distance_to_next} meters)")
+        current = current.next
+
+    print("Route completed.\n")
+
+#5. Route Efficiency / Shortest Traversal Logic (Basic)
+def calculate_total_distance(route):
+    total_distance = 0
+    current = route.head
+
+    while current:
+        total_distance += current.distance_to_next
+        current = current.next
+
+    return total_distance
+
+#6. Bus Module (Integration)
+class Bus:
+    def __init__(self, bus_id, capacity):
+        self.bus_id = bus_id
+        self.capacity = capacity
+
+    def start_route(self, route):
+        print(f"Bus {self.bus_id} is starting the route.")
+        simulate_bus_travel(route)
+
+#7. System Integration (Main System Controller)
+class BusSystem:
+    def __init__(self):
+        self.routes = {}
+        self.buses = {}
+
+    def add_route(self, route):
+        self.routes[route.route_name] = route
+
+    def add_bus(self, bus):
+        self.buses[bus.bus_id] = bus
+
+    def run_simulation(self, bus_id, route_name):
+        bus = self.buses.get(bus_id)
+        route = self.routes.get(route_name)
+
+        if not bus or not route:
+            print("Bus or Route not found.")
+            return
+
+        bus.start_route(route)
+        total_distance = calculate_total_distance(route)
+        print(f"Total route distance: {total_distance} meters")
+
+#8. Main Program Execution
+# Initialize system
+system = BusSystem()
+
+# Add route and bus
+system.add_route(route)
+bus1 = Bus("Bus-A", 40)
+system.add_bus(bus1)
+
+# Run simulation
+system.run_simulation("Bus-A", "UTHM Pagoh Main Route")
