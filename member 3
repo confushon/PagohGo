@@ -1,11 +1,4 @@
-"""
-================================================================
-MODULE: Bus Schedule Linked List
-DEVELOPER: SHA (Shangkary A/P Kawtheman)
-STUDENT ID: AW240031
-TASK: Bus schedule linked list with peak/off-peak optimization
-================================================================
-"""
+
 
 class ScheduleNode:
     """Node for bus schedule linked list"""
@@ -29,7 +22,7 @@ class BusSchedule:
         self.head = None   # Head pointer
         self.size = 0      # Number of nodes
     
-    # ========== OPERATION 1: INSERT ==========
+   
     def add_schedule(self, bus_id, time, period, capacity=40):
         """
         Insert new schedule at the END of linked list
@@ -51,7 +44,6 @@ class BusSchedule:
         self.size += 1
         return True
     
-    # ========== OPERATION 2: DELETE ==========
     def remove_schedule(self, bus_id):
         """
         Delete schedule by bus ID
@@ -77,7 +69,7 @@ class BusSchedule:
         
         return False  # Bus ID not found
     
-    # ========== OPERATION 3: SEARCH ==========
+    
     def search_schedule(self, bus_id):
         """
         Search for schedule by bus ID
@@ -107,7 +99,6 @@ class BusSchedule:
         
         return results
     
-    # ========== OPERATION 4: TRAVERSE ==========
     def display_schedule(self):
         """
         Traverse and display all schedules
@@ -129,7 +120,6 @@ class BusSchedule:
             current = current.next
             count += 1
     
-    # ========== PEAK/OFF-PEAK OPTIMIZATION ==========
     def optimize_peak_hours(self):
         """
         Optimization: Add extra buses during peak hours
@@ -183,7 +173,6 @@ class BusSchedule:
         print(f"Optimization: Removed {removed} off-peak buses")
         return removed
     
-    # ========== HELPER FUNCTIONS ==========
     def _time_gap(self, time1, time2):
         """Calculate gap between two times in minutes"""
         t1_min = self._time_to_minutes(time1)
@@ -239,7 +228,6 @@ class BusSchedule:
         return stats
 
 
-# ========== UTILITY FUNCTIONS ==========
 def determine_period(time_str):
     """
     Determine if time is Peak or Off-Peak
@@ -264,7 +252,6 @@ def validate_time(time_str):
         return False
 
 
-# ========== DEMONSTRATION ==========
 def demonstrate_sha_part():
     """
     Demonstrate SHA's part of the project
